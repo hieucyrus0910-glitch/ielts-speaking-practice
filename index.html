@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IELTS Speaking Part 1</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Fraunces:wght@600;700&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        sea: { 50:'#f0f9f6', 100:'#d4f0e7', 200:'#a8e1cf', 300:'#6ecbad', 400:'#3bae8a', 500:'#1e8e6e', 600:'#167259', 700:'#115c48' },
+        sand: { 50:'#fefcf8', 100:'#fdf6e8', 200:'#f9e8c4', 300:'#f3d48e' },
+        ink: { 700:'#2d3748', 800:'#1a202c', 900:'#111318' }
+      }
+    }
+  }
+}
+</script>
+  <style>
+body { font-family: 'DM Sans', sans-serif; }
+h1, h2, h3, .display-font { font-family: 'Fraunces', serif; }
+.fade-in { animation: fadeIn .4s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.topic-btn.active { background: #1e8e6e; color: #fff; box-shadow: 0 4px 14px rgba(30,142,110,.35); }
+.quiz-option:hover { border-color: #3bae8a; background: #f0f9f6; }
+.quiz-option.correct { border-color: #1e8e6e; background: #d4f0e7; }
+.quiz-option.wrong { border-color: #e53e3e; background: #fff5f5; }
+.tab-btn.active { background: #fff; color: #1e8e6e; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.report-card { background: linear-gradient(135deg, #f0f9f6 0%, #fefcf8 50%, #f0f9f6 100%); }
+::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-thumb { background:#a8e1cf; border-radius:3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-sand-50 text-ink-700">
+  <div id="app" class="h-full w-full overflow-auto"><!-- Header -->
+   <header class="bg-white border-b border-sea-100 sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+     <div>
+      <h1 id="main-title" class="display-font text-xl md:text-2xl text-sea-600 leading-tight">IELTS Speaking Part 1</h1>
+      <p id="main-subtitle" class="text-xs text-ink-700/60 mt-0.5">Practice for A2–B1 Learners</p>
+     </div>
+     <div class="flex items-center gap-2"><button onclick="toggleViet()" id="viet-toggle" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-sea-200 hover:bg-sea-50 transition" title="Toggle Vietnamese"> <span>🇻🇳</span><span id="viet-label">VI: ON</span> </button>
+     </div>
+    </div>
+   </header><!-- Topic Nav -->
+   <nav class="bg-white/70 backdrop-blur border-b border-sea-100 sticky top-[57px] z-20 overflow-x-auto">
+    <div class="max-w-5xl mx-auto px-4 py-2 flex gap-2" id="topic-nav"></div>
+   </nav><!-- Main Content -->
+   <main class="max-w-5xl mx-auto px-4 py-6" id="main-content"><!-- Populated by JS -->
+   </main><!-- Summary Modal -->
+   <div id="summary-overlay" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4" style="display:none;">
+    <div id="summary-card" class="report-card rounded-2xl shadow-2xl max-w-lg w-full max-h-[90%] overflow-auto p-6 border border-sea-200 fade-in">
+    </div>
+   </div>
+  </div>
+  <script>
+// ========== DATA ==========
+const TOPICS = [
+  {
+    id:'hobbies', icon:'palette', name:'Hobbies & Creative Activities',
+    questions: [
+      { en:"Do you like watching films?", vi:"Bạn có thích xem phim không?" },
+      { en:"What do you usually do in your free time?", vi:"Bạn thường làm gì vào thời gian rảnh?" },
+      { en:"Do you enjoy reading books?", vi:"Bạn có thích đọc sách không?" },
+      { en:"Have you ever tried painting or drawing?", vi:"Bạn đã bao giờ thử vẽ tranh chưa?" }
+    ],
+    vocab: [
+      { en:"hobby", vi:"sở thích", ex:"Reading is my favourite hobby." },
+      { en:"creative", vi:"sáng tạo", ex:"She is very creative." },
+      { en:"painting", vi:"vẽ tranh", ex:"I enjoy painting on weekends." },
+      { en:"collect", vi:"sưu tầm", ex:"I collect stamps." },
+      { en:"leisure", vi:"giải trí", ex:"What do you do for leisure?" }
+    ],
+    grammar: [
+      { structure:"I like / enjoy + V-ing", vi:"Tôi thích + làm gì", ex:"I like watching movies." },
+      { structure:"In my free time, I usually...", vi:"Vào thời gian rảnh, tôi thường...", ex:"In my free time, I usually read books." },
+      { structure:"because + reason", vi:"bởi vì + lý do", ex:"I like painting because it helps me relax." }
+    ],
+    exercises: [
+      { type:'fill', q:"I ___ watching films in my free time.", options:["enjoy","enjoys","enjoyed"], answer:0, viHint:"Dùng 'enjoy' + V-ing" },
+      { type:'choice', q:"Which sentence is correct?", options:["I like watch TV.","I like watching TV.","I like to watching TV."], answer:1, viHint:"like + V-ing hoặc like + to V" },
+      { type:'order', words:["I","usually","read","books","in","my","free","time"], answer:"I usually read books in my free time", viHint:"Sắp xếp: S + adv + V + O + time" },
+      { type:'fill', q:"She is very ___ at drawing.", options:["good","well","nice"], answer:0, viHint:"'good at' + noun/V-ing" }
+    ],
+    sampleAnswer:"I really enjoy watching films, especially comedies. In my free time, I usually watch movies with my family because it helps us relax and have fun together."
+  },
+  {
+    id:'sports', icon:'trophy', name:'Sports & Leisure',
+    questions: [
+      { en:"Do you play any sports?", vi:"Bạn có chơi môn thể thao nào không?" },
+      { en:"How often do you exercise?", vi:"Bạn tập thể dục thường xuyên không?" },
+      { en:"What is your favourite sport?", vi:"Môn thể thao yêu thích của bạn là gì?" }
+    ],
+    vocab: [
+      { en:"exercise", vi:"tập thể dục", ex:"I exercise every morning." },
+      { en:"competition", vi:"cuộc thi", ex:"He joined a swimming competition." },
+      { en:"team", vi:"đội", ex:"I play on a football team." },
+      { en:"healthy", vi:"khỏe mạnh", ex:"Sport keeps me healthy." },
+      { en:"outdoor", vi:"ngoài trời", ex:"I prefer outdoor activities." }
+    ],
+    grammar: [
+      { structure:"I play + sport (no 'the')", vi:"Tôi chơi + môn thể thao", ex:"I play badminton twice a week." },
+      { structure:"Frequency adverbs: always, usually, often, sometimes", vi:"Trạng từ tần suất", ex:"I usually go jogging in the morning." },
+      { structure:"It makes me + adj", vi:"Nó khiến tôi + tính từ", ex:"It makes me feel happy and healthy." }
+    ],
+    exercises: [
+      { type:'fill', q:"I ___ football every weekend.", options:["play","plays","playing"], answer:0, viHint:"Thì hiện tại đơn: I + V nguyên" },
+      { type:'choice', q:"Which is correct?", options:["I play the tennis.","I play tennis.","I plays tennis."], answer:1, viHint:"Không dùng 'the' trước tên thể thao" },
+      { type:'order', words:["She","usually","goes","swimming","on","Sundays"], answer:"She usually goes swimming on Sundays", viHint:"S + adv + V + time" },
+      { type:'fill', q:"Playing sports makes me feel ___.", options:["health","healthy","healthily"], answer:1, viHint:"feel + adj (tính từ)" }
+    ],
+    sampleAnswer:"Yes, I play badminton every weekend with my friends. I also go jogging in the morning because it makes me feel healthy and energetic."
+  },
+  {
+    id:'travel', icon:'plane', name:'Travel & Holidays',
+    questions: [
+      { en:"Do you like travelling?", vi:"Bạn có thích du lịch không?" },
+      { en:"Where did you go on your last holiday?", vi:"Kỳ nghỉ gần nhất bạn đi đâu?" },
+      { en:"Do you prefer the beach or the mountains?", vi:"Bạn thích biển hay núi hơn?" }
+    ],
+    vocab: [
+      { en:"destination", vi:"điểm đến", ex:"Da Nang is a popular destination." },
+      { en:"experience", vi:"trải nghiệm", ex:"It was an amazing experience." },
+      { en:"scenery", vi:"phong cảnh", ex:"The scenery was beautiful." },
+      { en:"luggage", vi:"hành lý", ex:"Don't forget your luggage." },
+      { en:"explore", vi:"khám phá", ex:"I want to explore new places." }
+    ],
+    grammar: [
+      { structure:"I went to + place (past simple)", vi:"Tôi đã đến + nơi", ex:"I went to Da Lat last summer." },
+      { structure:"I prefer + A + to + B", vi:"Tôi thích A hơn B", ex:"I prefer the beach to the mountains." },
+      { structure:"I would like to + V", vi:"Tôi muốn + làm gì", ex:"I would like to visit Japan." }
+    ],
+    exercises: [
+      { type:'fill', q:"Last summer, I ___ to Nha Trang.", options:["go","went","gone"], answer:1, viHint:"Quá khứ đơn: went" },
+      { type:'choice', q:"Which is correct?", options:["I prefer beach to mountain.","I prefer the beach to the mountains.","I prefer the beach than the mountains."], answer:1, viHint:"prefer + the + N + to + the + N" },
+      { type:'order', words:["I","would","like","to","visit","Japan","someday"], answer:"I would like to visit Japan someday", viHint:"would like to + V nguyên" },
+      { type:'fill', q:"The ___ in Sa Pa was breathtaking.", options:["scenery","scene","scenic"], answer:0, viHint:"scenery = phong cảnh (danh từ)" }
+    ],
+    sampleAnswer:"Yes, I love travelling! Last summer, I went to Da Nang with my family. The scenery was beautiful, and I really enjoyed the beach. I would like to visit Japan someday."
+  },
+  {
+    id:'tech', icon:'smartphone', name:'Technology',
+    questions: [
+      { en:"Do you use the internet a lot?", vi:"Bạn có dùng internet nhiều không?" },
+      { en:"What do you use your phone for?", vi:"Bạn dùng điện thoại để làm gì?" },
+      { en:"Do you think technology is helpful for learning?", vi:"Bạn có nghĩ công nghệ hữu ích cho việc học không?" }
+    ],
+    vocab: [
+      { en:"device", vi:"thiết bị", ex:"My phone is a useful device." },
+      { en:"social media", vi:"mạng xã hội", ex:"I check social media every day." },
+      { en:"convenient", vi:"tiện lợi", ex:"Online shopping is very convenient." },
+      { en:"app (application)", vi:"ứng dụng", ex:"I use a dictionary app." },
+      { en:"download", vi:"tải xuống", ex:"I downloaded a new game." }
+    ],
+    grammar: [
+      { structure:"I use + N + to + V / for + V-ing", vi:"Tôi dùng... để...", ex:"I use my phone to study English." },
+      { structure:"I think + clause", vi:"Tôi nghĩ + mệnh đề", ex:"I think technology is very helpful." },
+      { structure:"It helps me + V", vi:"Nó giúp tôi + làm gì", ex:"It helps me learn new words." }
+    ],
+    exercises: [
+      { type:'fill', q:"I use my phone ___ study English.", options:["for","to","with"], answer:1, viHint:"use + N + to + V" },
+      { type:'choice', q:"Which is correct?", options:["Technology help me learn.","Technology helps me learn.","Technology helps me to learning."], answer:1, viHint:"help + O + V nguyên" },
+      { type:'order', words:["I","think","the","internet","is","very","useful"], answer:"I think the internet is very useful", viHint:"I think + S + V + adj" },
+      { type:'fill', q:"Online shopping is very ___.", options:["convenience","convenient","conveniently"], answer:1, viHint:"is + adj (tính từ)" }
+    ],
+    sampleAnswer:"Yes, I use the internet every day. I mostly use my phone to study English and check social media. I think technology is very helpful because it helps me learn new things easily."
+  },
+  {
+    id:'food', icon:'utensils', name:'Food, Money & Lifestyle',
+    questions: [
+      { en:"What is your favourite food?", vi:"Món ăn yêu thích của bạn là gì?" },
+      { en:"Do you like cooking?", vi:"Bạn có thích nấu ăn không?" },
+      { en:"Do you save money?", vi:"Bạn có tiết kiệm tiền không?" },
+      { en:"What do you usually spend money on?", vi:"Bạn thường tiêu tiền vào gì?" }
+    ],
+    vocab: [
+      { en:"delicious", vi:"ngon", ex:"This pho is delicious!" },
+      { en:"recipe", vi:"công thức", ex:"I followed a simple recipe." },
+      { en:"afford", vi:"đủ khả năng chi trả", ex:"I can't afford a new phone." },
+      { en:"budget", vi:"ngân sách", ex:"I try to stick to my budget." },
+      { en:"save up", vi:"tiết kiệm", ex:"I'm saving up for a trip." }
+    ],
+    grammar: [
+      { structure:"My favourite + N + is...", vi:"... yêu thích của tôi là...", ex:"My favourite food is pho." },
+      { structure:"I usually spend money on + N", vi:"Tôi thường tiêu tiền vào...", ex:"I usually spend money on food and books." },
+      { structure:"I try to + V", vi:"Tôi cố gắng + làm gì", ex:"I try to save money every month." }
+    ],
+    exercises: [
+      { type:'fill', q:"My favourite food ___ pho.", options:["are","is","am"], answer:1, viHint:"My favourite + N + is" },
+      { type:'choice', q:"Which is correct?", options:["I spend money for clothes.","I spend money on clothes.","I spend money to clothes."], answer:1, viHint:"spend money on + N" },
+      { type:'order', words:["I","try","to","save","money","every","month"], answer:"I try to save money every month", viHint:"try to + V nguyên" },
+      { type:'fill', q:"This cake is really ___!", options:["delicious","deliciously","deliciousness"], answer:0, viHint:"is + adj" }
+    ],
+    sampleAnswer:"My favourite food is pho because it is delicious and healthy. I sometimes cook simple dishes at home. I try to save money every month, but I usually spend it on food and books."
+  }
+];
+
+// ========== STATE ==========
+let currentTopic = 0;
+let showViet = true;
+let userAnswers = {}; // { topicId: { exIdx: {answered:bool, correct:bool} } }
+let userWritten = {}; // { topicId: string }
+let studentName = '';
+
+// ========== INIT ==========
+const defaultConfig = {
+  app_title: 'IELTS Speaking Part 1',
+  subtitle: 'Practice for A2–B1 Learners',
+  background_color: '#fefcf8',
+  surface_color: '#ffffff',
+  text_color: '#2d3748',
+  primary_color: '#1e8e6e',
+  secondary_color: '#a8e1cf'
+};
+
+function applyConfig(cfg) {
+  document.getElementById('main-title').textContent = cfg.app_title || defaultConfig.app_title;
+  document.getElementById('main-subtitle').textContent = cfg.subtitle || defaultConfig.subtitle;
+  const app = document.getElementById('app');
+  app.style.backgroundColor = cfg.background_color || defaultConfig.background_color;
+  app.style.color = cfg.text_color || defaultConfig.text_color;
+  document.querySelectorAll('.surface-bg').forEach(el => el.style.backgroundColor = cfg.surface_color || defaultConfig.surface_color);
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (cfg) => applyConfig(cfg),
+  mapToCapabilities: (cfg) => ({
+    recolorables: [
+      { get:()=>cfg.background_color||defaultConfig.background_color, set:v=>{cfg.background_color=v;window.elementSdk.setConfig({background_color:v})} },
+      { get:()=>cfg.surface_color||defaultConfig.surface_color, set:v=>{cfg.surface_color=v;window.elementSdk.setConfig({surface_color:v})} },
+      { get:()=>cfg.text_color||defaultConfig.text_color, set:v=>{cfg.text_color=v;window.elementSdk.setConfig({text_color:v})} },
+      { get:()=>cfg.primary_color||defaultConfig.primary_color, set:v=>{cfg.primary_color=v;window.elementSdk.setConfig({primary_color:v})} },
+      { get:()=>cfg.secondary_color||defaultConfig.secondary_color, set:v=>{cfg.secondary_color=v;window.elementSdk.setConfig({secondary_color:v})} }
+    ],
+    borderables: [],
+    fontEditable: { get:()=>cfg.font_family||defaultConfig.font_family, set:v=>{cfg.font_family=v;window.elementSdk.setConfig({font_family:v})} },
+    fontSizeable: undefined
+  }),
+  mapToEditPanelValues: (cfg) => new Map([
+    ['app_title', cfg.app_title || defaultConfig.app_title],
+    ['subtitle', cfg.subtitle || defaultConfig.subtitle]
+  ])
+});
+
+// ========== RENDER TOPIC NAV ==========
+function renderNav() {
+  const nav = document.getElementById('topic-nav');
+  nav.innerHTML = TOPICS.map((t,i) => `
+    <button onclick="selectTopic(${i})" class="topic-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium border border-sea-200 transition ${i===currentTopic?'active':'bg-white hover:bg-sea-50'}" data-topic="${i}">
+      <i data-lucide="${t.icon}" class="inline w-4 h-4 mr-1 align-[-3px]"></i>${t.name}
+    </button>
+  `).join('');
+  lucide.createIcons();
+}
+
+function selectTopic(i) {
+  currentTopic = i;
+  renderNav();
+  renderContent();
+}
+
+// ========== RENDER CONTENT ==========
+function renderContent() {
+  const t = TOPICS[currentTopic];
+  const mc = document.getElementById('main-content');
+  if (!userAnswers[t.id]) userAnswers[t.id] = {};
+  if (!userWritten[t.id]) userWritten[t.id] = '';
+
+  mc.innerHTML = `
+  <div class="fade-in space-y-6">
+    <!-- Section Tabs -->
+    <div class="flex gap-1 bg-sea-100 p-1 rounded-xl overflow-x-auto" role="tablist">
+      ${['Questions','Vocabulary','Grammar','Practice','Speaking'].map((tab,i)=>`
+        <button role="tab" onclick="switchTab(${i})" class="tab-btn flex-1 min-w-[80px] px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition ${i===0?'active':''}" data-tab="${i}">${tab}</button>
+      `).join('')}
+    </div>
+
+    <!-- Tab Panels -->
+    <div id="tab-panels">
+      ${renderQuestions(t)}
+    </div>
+
+    <!-- Progress -->
+    <div class="bg-white rounded-xl border border-sea-100 p-4 mt-6">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-semibold text-sm">📊 Progress / Tiến độ</h3>
+        <button onclick="showSummary()" class="text-xs px-4 py-2 bg-sea-500 text-white rounded-lg hover:bg-sea-600 transition font-medium">
+          <i data-lucide="file-text" class="inline w-3.5 h-3.5 mr-1 align-[-2px]"></i>View Summary
+        </button>
+      </div>
+      ${renderProgress(t)}
+    </div>
+  </div>`;
+  lucide.createIcons();
+}
+
+let currentTab = 0;
+function switchTab(i) {
+  currentTab = i;
+  const t = TOPICS[currentTopic];
+  document.querySelectorAll('.tab-btn').forEach((b,idx)=> b.classList.toggle('active', idx===i));
+  const panels = document.getElementById('tab-panels');
+  panels.innerHTML = [renderQuestions, renderVocab, renderGrammar, renderPractice, renderSpeaking][i](t);
+  panels.querySelector('.fade-in')?.classList.add('fade-in');
+  lucide.createIcons();
+}
+
+function vi(text) { return showViet ? `<span class="text-sea-600 text-sm italic">${text}</span>` : ''; }
+
+function renderQuestions(t) {
+  return `<div class="fade-in space-y-3">
+    <h2 class="display-font text-lg text-sea-700 mb-2">💬 Speaking Questions</h2>
+    ${t.questions.map((q,i)=>`
+      <div class="bg-white rounded-xl border border-sea-100 p-4 flex gap-3 items-start">
+        <span class="bg-sea-100 text-sea-700 font-bold text-sm w-7 h-7 rounded-full flex items-center justify-center shrink-0">${i+1}</span>
+        <div>
+          <p class="font-medium">${q.en}</p>
+          ${vi(q.vi)}
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function renderVocab(t) {
+  return `<div class="fade-in space-y-3">
+    <h2 class="display-font text-lg text-sea-700 mb-2">📚 Vocabulary</h2>
+    <div class="grid gap-3 md:grid-cols-2">
+      ${t.vocab.map(v=>`
+        <div class="bg-white rounded-xl border border-sea-100 p-4">
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="font-bold text-sea-600">${v.en}</span>
+            ${showViet?`<span class="text-sm text-ink-700/50">— ${v.vi}</span>`:''}
+          </div>
+          <p class="text-sm text-ink-700/70 italic">"${v.ex}"</p>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function renderGrammar(t) {
+  return `<div class="fade-in space-y-3">
+    <h2 class="display-font text-lg text-sea-700 mb-2">📝 Grammar Structures</h2>
+    ${t.grammar.map(g=>`
+      <div class="bg-white rounded-xl border border-sea-100 p-4">
+        <p class="font-bold text-sea-700 mb-1">${g.structure}</p>
+        ${vi(g.vi)}
+        <div class="mt-2 bg-sea-50 rounded-lg px-3 py-2 text-sm">
+          <span class="text-ink-700/50">Example:</span> <span class="font-medium">${g.ex}</span>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function renderPractice(t) {
+  const ta = userAnswers[t.id];
+  return `<div class="fade-in space-y-4">
+    <h2 class="display-font text-lg text-sea-700 mb-2">🎯 Practice Exercises</h2>
+    ${t.exercises.map((ex,i)=>{
+      const done = ta[i];
+      if (ex.type === 'fill' || ex.type === 'choice') {
+        return `<div class="bg-white rounded-xl border border-sea-100 p-4">
+          <p class="font-medium mb-3">${ex.type==='fill'?'Fill in the blank':'Choose the correct answer'}: <span class="text-sea-700">${ex.q}</span></p>
+          <div class="grid gap-2 md:grid-cols-3">
+            ${ex.options.map((o,oi)=>{
+              let cls = 'quiz-option border rounded-lg px-4 py-2 text-sm font-medium cursor-pointer transition text-center';
+              if (done) {
+                if (oi === ex.answer) cls += ' correct';
+                else if (done.selected === oi && !done.correct) cls += ' wrong';
+                cls += ' pointer-events-none';
+              }
+              return `<button class="${cls}" onclick="checkAnswer(${i},${oi})">${o}</button>`;
+            }).join('')}
+          </div>
+          ${done ? `<div class="mt-2 text-sm ${done.correct?'text-sea-600':'text-red-500'}">${done.correct?'✅ Correct! / Đúng rồi!':'❌ Incorrect / Sai rồi.'} ${!done.correct && showViet ? '<span class=text-ink-700/50>'+ex.viHint+'</span>':''}</div>` : (showViet?`<p class="mt-2 text-xs text-ink-700/40">💡 ${ex.viHint}</p>`:'')}
+        </div>`;
+      }
+      if (ex.type === 'order') {
+        const shuffled = done ? null : [...ex.words].sort(()=>Math.random()-.5);
+        return `<div class="bg-white rounded-xl border border-sea-100 p-4" id="order-ex-${i}">
+          <p class="font-medium mb-3">Arrange the words into a sentence:</p>
+          ${done ? `
+            <p class="text-sm font-medium ${done.correct?'text-sea-600':'text-red-500'}">${done.correct?'✅':'❌'} ${done.userAns}</p>
+            ${!done.correct?`<p class="text-xs text-ink-700/50 mt-1">Correct: ${ex.answer}</p>`:''}
+          ` : `
+            <div class="flex flex-wrap gap-2 mb-3" id="word-bank-${i}">
+              ${shuffled.map(w=>`<button class="px-3 py-1.5 bg-sea-50 border border-sea-200 rounded-lg text-sm font-medium hover:bg-sea-100 transition" onclick="pickWord(this,${i})">${w}</button>`).join('')}
+            </div>
+            <div class="min-h-[40px] border-2 border-dashed border-sea-200 rounded-lg p-2 flex flex-wrap gap-2 mb-3" id="sentence-${i}"></div>
+            <button onclick="checkOrder(${i})" class="px-4 py-2 bg-sea-500 text-white rounded-lg text-sm hover:bg-sea-600 transition">Check Answer</button>
+          `}
+          ${showViet && !done?`<p class="mt-2 text-xs text-ink-700/40">💡 ${ex.viHint}</p>`:''}
+        </div>`;
+      }
+      return '';
+    }).join('')}
+  </div>`;
+}
+
+function renderSpeaking(t) {
+  const written = userWritten[t.id] || '';
+  return `<div class="fade-in space-y-4">
+    <h2 class="display-font text-lg text-sea-700 mb-2">🎤 Speaking Practice</h2>
+    <div class="bg-white rounded-xl border border-sea-100 p-4">
+      <p class="text-sm text-ink-700/60 mb-1">${showViet?'Chọn một câu hỏi ở trên và viết câu trả lời (2–3 câu):':'Choose a question above and write your answer (2–3 sentences):'}</p>
+      <p class="font-medium text-sea-600 mb-3">${t.questions[0].en}</p>
+      <textarea id="speaking-input" rows="4" class="w-full border border-sea-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-sea-300 resize-none" placeholder="Type your answer here...">${written}</textarea>
+      <div class="flex gap-2 mt-3 flex-wrap">
+        <button onclick="saveSpeaking()" class="px-4 py-2 bg-sea-500 text-white rounded-lg text-sm hover:bg-sea-600 transition">
+          <i data-lucide="save" class="inline w-3.5 h-3.5 mr-1 align-[-2px]"></i>Save
+        </button>
+        <button onclick="toggleSample()" class="px-4 py-2 border border-sea-300 rounded-lg text-sm hover:bg-sea-50 transition text-sea-700">
+          <i data-lucide="eye" class="inline w-3.5 h-3.5 mr-1 align-[-2px]"></i>Show Sample Answer
+        </button>
+      </div>
+      <div id="sample-box" class="hidden mt-4 bg-sea-50 border border-sea-200 rounded-xl p-4">
+        <p class="text-xs font-semibold text-sea-600 mb-1">Sample Answer / Câu trả lời mẫu:</p>
+        <p class="text-sm italic">${t.sampleAnswer}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderProgress(t) {
+  const ta = userAnswers[t.id] || {};
+  const total = t.exercises.length;
+  const done = Object.keys(ta).length;
+  const correct = Object.values(ta).filter(a=>a.correct).length;
+  const pct = total ? Math.round((correct/total)*100) : 0;
+  return `
+    <div class="flex gap-4 text-sm mb-2">
+      <span>Done: <strong>${done}/${total}</strong></span>
+      <span>Correct: <strong class="text-sea-600">${correct}</strong></span>
+      <span>Score: <strong class="${pct>=70?'text-sea-600':'text-orange-500'}">${pct}%</strong></span>
+    </div>
+    <div class="w-full bg-sea-100 rounded-full h-2.5">
+      <div class="bg-sea-500 h-2.5 rounded-full transition-all" style="width:${pct}%"></div>
+    </div>
+    <p class="text-xs mt-2 text-ink-700/50">${pct>=70?'🎉 Good job! Keep going!':'💪 You need more practice. Try again!'}</p>
+  `;
+}
+
+// ========== INTERACTIONS ==========
+function checkAnswer(exIdx, optIdx) {
+  const t = TOPICS[currentTopic];
+  const ex = t.exercises[exIdx];
+  userAnswers[t.id][exIdx] = { answered:true, correct: optIdx===ex.answer, selected:optIdx };
+  switchTab(3); // re-render practice
+}
+
+function pickWord(btn, exIdx) {
+  const sentence = document.getElementById('sentence-'+exIdx);
+  const wordEl = document.createElement('button');
+  wordEl.className = 'px-3 py-1.5 bg-sea-200 border border-sea-300 rounded-lg text-sm font-medium cursor-pointer hover:bg-red-100 transition';
+  wordEl.textContent = btn.textContent;
+  wordEl.onclick = function() { btn.style.display=''; this.remove(); };
+  sentence.appendChild(wordEl);
+  btn.style.display = 'none';
+}
+
+function checkOrder(exIdx) {
+  const t = TOPICS[currentTopic];
+  const sentence = document.getElementById('sentence-'+exIdx);
+  const words = [...sentence.children].map(b=>b.textContent).join(' ');
+  const correct = words.trim() === t.exercises[exIdx].answer;
+  userAnswers[t.id][exIdx] = { answered:true, correct, userAns:words };
+  switchTab(3);
+}
+
+function saveSpeaking() {
+  const t = TOPICS[currentTopic];
+  const inp = document.getElementById('speaking-input');
+  userWritten[t.id] = inp.value;
+  // show inline feedback
+  const btn = inp.parentElement.querySelector('button');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✅ Saved!';
+  btn.classList.add('bg-sea-600');
+  setTimeout(()=>{ btn.innerHTML = orig; btn.classList.remove('bg-sea-600'); }, 1500);
+}
+
+function toggleSample() {
+  const box = document.getElementById('sample-box');
+  box.classList.toggle('hidden');
+}
+
+function toggleViet() {
+  showViet = !showViet;
+  document.getElementById('viet-label').textContent = showViet ? 'VI: ON' : 'VI: OFF';
+  renderContent();
+}
+
+// ========== SUMMARY ==========
+function showSummary() {
+  const overlay = document.getElementById('summary-overlay');
+  const card = document.getElementById('summary-card');
+
+  let totalDone=0, totalCorrect=0, totalEx=0;
+  const topicStats = TOPICS.map(t => {
+    const ta = userAnswers[t.id]||{};
+    const done = Object.keys(ta).length;
+    const correct = Object.values(ta).filter(a=>a.correct).length;
+    totalDone += done; totalCorrect += correct; totalEx += t.exercises.length;
+    return { name:t.name, done, total:t.exercises.length, correct };
+  });
+  const overallPct = totalEx ? Math.round((totalCorrect/totalEx)*100) : 0;
+
+  // Gather written answers
+  const writings = TOPICS.filter(t=>userWritten[t.id]).map(t=>({topic:t.name, text:userWritten[t.id]}));
+
+  card.innerHTML = `
+    <div class="text-center mb-4">
+      <div class="inline-block bg-sea-100 rounded-full p-3 mb-2"><i data-lucide="award" class="w-8 h-8 text-sea-600"></i></div>
+      <h2 class="display-font text-xl text-sea-700">Learning Report Card</h2>
+      <p class="text-xs text-ink-700/50">Báo cáo kết quả học tập</p>
+    </div>
+    <div class="space-y-3 mb-4">
+      <div class="flex gap-2 items-center">
+        <label class="text-xs font-medium w-20 shrink-0" for="student-name">Name:</label>
+        <input id="student-name" type="text" value="${studentName}" onchange="studentName=this.value" class="flex-1 border border-sea-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sea-300" placeholder="Enter your name / Nhập tên">
+      </div>
+      <div class="flex gap-2 items-center text-sm">
+        <span class="w-20 shrink-0 text-xs font-medium">Date:</span>
+        <span>${new Date().toLocaleDateString('en-GB')}</span>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-sea-200 p-4 mb-4">
+      <div class="text-center mb-3">
+        <span class="text-3xl font-bold display-font ${overallPct>=70?'text-sea-600':'text-orange-500'}">${overallPct}%</span>
+        <p class="text-xs text-ink-700/50">${totalCorrect}/${totalEx} correct</p>
+        <p class="text-sm mt-1">${overallPct>=80?'🌟 Excellent!':overallPct>=60?'👍 Good job!':'💪 Keep practising!'}</p>
+      </div>
+      <div class="space-y-2">
+        ${topicStats.map(s=>`
+          <div class="flex items-center gap-2 text-xs">
+            <span class="flex-1 truncate">${s.name}</span>
+            <span class="font-medium ${s.correct===s.total&&s.total>0?'text-sea-600':''}">${s.correct}/${s.total}</span>
+            <div class="w-16 bg-sea-100 rounded-full h-1.5"><div class="bg-sea-500 h-1.5 rounded-full" style="width:${s.total?Math.round(s.correct/s.total*100):0}%"></div></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ${writings.length?`
+    <div class="bg-white rounded-xl border border-sea-200 p-4 mb-4">
+      <h3 class="text-sm font-semibold mb-2">📝 Written Answers</h3>
+      ${writings.map(w=>`
+        <div class="mb-2">
+          <p class="text-xs text-ink-700/50">${w.topic}</p>
+          <p class="text-sm italic">"${w.text}"</p>
+        </div>
+      `).join('')}
+    </div>`:''}
+    <div class="flex gap-2">
+      <button onclick="closeSummary()" class="flex-1 px-4 py-2 border border-sea-200 rounded-lg text-sm hover:bg-sea-50 transition">Close</button>
+      <button onclick="downloadSummary()" class="flex-1 px-4 py-2 bg-sea-500 text-white rounded-lg text-sm hover:bg-sea-600 transition">
+        <i data-lucide="download" class="inline w-3.5 h-3.5 mr-1 align-[-2px]"></i>Download
+      </button>
+    </div>
+  `;
+  overlay.style.display = 'flex';
+  lucide.createIcons();
+}
+
+function closeSummary() {
+  document.getElementById('summary-overlay').style.display = 'none';
+}
+
+function downloadSummary() {
+  // Use canvas to create a simple text-based summary image
+  const card = document.getElementById('summary-card');
+  // Fallback: create a text file download
+  const name = document.getElementById('student-name')?.value || 'Student';
+  let totalCorrect=0, totalEx=0;
+  TOPICS.forEach(t => {
+    const ta = userAnswers[t.id]||{};
+    totalCorrect += Object.values(ta).filter(a=>a.correct).length;
+    totalEx += t.exercises.length;
+  });
+  const writings = TOPICS.filter(t=>userWritten[t.id]).map(t=>`[${t.name}]\n"${userWritten[t.id]}"`).join('\n\n');
+  const text = `IELTS Speaking Part 1 - Report Card\n${'='.repeat(40)}\nName: ${name}\nDate: ${new Date().toLocaleDateString('en-GB')}\nScore: ${totalCorrect}/${totalEx} (${totalEx?Math.round(totalCorrect/totalEx*100):0}%)\n\n${writings?'Written Answers:\n'+writings:''}`;
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ielts-report-${name.replace(/\s+/g,'-')}.txt`;
+  a.click();
+}
+
+// Click outside to close summary
+document.getElementById('summary-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeSummary();
+});
+
+// ========== BOOT ==========
+renderNav();
+renderContent();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ebbbf3c508cfd36',t:'MTc3NjA5NjY5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
