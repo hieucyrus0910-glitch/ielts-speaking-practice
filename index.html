@@ -12,12 +12,11 @@
 
 <style>
 body { font-family: 'DM Sans', sans-serif; }
-h1, h2, h3, .display-font { font-family: 'Fraunces', serif; }
-.topic-btn.active { background: #1e8e6e; color: #fff; }
-.quiz-option:hover { border-color: #3bae8a; background: #f0f9f6; }
-.quiz-option.correct { background: #d4f0e7; }
-.quiz-option.wrong { background: #fff5f5; }
-.tab-btn.active { background: #fff; color: #1e8e6e; }
+h1,h2,h3,.display-font { font-family:'Fraunces', serif; }
+.topic-btn.active { background:#1e8e6e; color:#fff; }
+.tab-btn.active { background:#fff; color:#1e8e6e; }
+.quiz-option.correct { background:#d4f0e7; }
+.quiz-option.wrong { background:#fff5f5; }
 </style>
 </head>
 
@@ -25,12 +24,12 @@ h1, h2, h3, .display-font { font-family: 'Fraunces', serif; }
 
 <div id="app">
 
-<header class="bg-white p-4 shadow">
+<header class="bg-white p-4 shadow flex justify-between">
 <h1 class="text-xl font-bold">IELTS Speaking Part 1</h1>
-<button onclick="toggleViet()">🇻🇳 Toggle VI</button>
+<button onclick="toggleViet()" class="text-sm border px-2 py-1 rounded">🇻🇳 VI</button>
 </header>
 
-<nav id="topic-nav" class="p-2 flex gap-2"></nav>
+<nav id="topic-nav" class="p-3 flex gap-2"></nav>
 
 <main id="main-content" class="p-4"></main>
 
@@ -46,6 +45,12 @@ name:'Hobbies',
 questions:[
 {en:"Do you like watching films?", vi:"Bạn có thích xem phim không?"}
 ],
+vocab:[
+{en:"hobby", vi:"sở thích"}
+],
+grammar:[
+{en:"I like + V-ing", vi:"Tôi thích làm gì"}
+],
 exercises:[
 {q:"I ___ watching films.", options:["like","likes"], answer:0}
 ]
@@ -54,13 +59,17 @@ exercises:[
 
 // ===== STATE =====
 let currentTopic = 0;
+let currentTab = 0;
 let showViet = true;
 
-// ===== RENDER NAV =====
+// ===== NAV =====
 function renderNav(){
-document.getElementById('topic-nav').innerHTML =
-TOPICS.map((t,i)=>`
-<button onclick="selectTopic(${i})">${t.name}</button>
+const nav = document.getElementById('topic-nav');
+nav.innerHTML = TOPICS.map((t,i)=>`
+<button onclick="selectTopic(${i})"
+class="topic-btn px-3 py-1 border rounded">
+${t.name}
+</button>
 `).join('');
 }
 
@@ -72,43 +81,106 @@ renderContent();
 
 // ===== CONTENT =====
 function renderContent(){
-const t=TOPICS[currentTopic];
+const t = TOPICS[currentTopic];
 
 document.getElementById('main-content').innerHTML=`
-<h2>${t.name}</h2>
 
-${t.questions.map(q=>`
-<p>${q.en}<br>${showViet?q.vi:''}</p>
+<div class="flex gap-2 mb-4">
+${["Questions","Vocabulary","Grammar","Practice","Speaking"].map((tab,i)=>`
+<button onclick="switchTab(${i})"
+class="tab-btn px-3 py-1 border rounded ${i===0?'active':''}">
+${tab}
+</button>
 `).join('')}
+</div>
 
-<h3>Practice</h3>
+<div id="tab-panels">
+${renderQuestions(t)}
+</div>
 
-${t.exercises.map((ex,i)=>`
-<p>${ex.q}</p>
-${ex.options.map((o,oi)=>`
-<button onclick="checkAnswer(${i},${oi})">${o}</button>
-`).join('')}
-`).join('')}
 `;
 }
 
-// ===== CHECK =====
-function checkAnswer(i,oi){
-const ex=TOPICS[currentTopic].exercises[i];
-if(oi===ex.answer){
-alert("Correct!");
-}else{
-alert("Wrong!");
-}
+// ===== SWITCH TAB (FIXED) =====
+function switchTab(i){
+currentTab=i;
+const t = TOPICS[currentTopic];
+
+document.querySelectorAll('.tab-btn').forEach((b,idx)=>{
+b.classList.toggle('active', idx===i);
+});
+
+const panels = document.getElementById('tab-panels');
+if(!panels) return;
+
+const renderers = [
+renderQuestions,
+renderVocab,
+renderGrammar,
+renderPractice,
+renderSpeaking
+];
+
+panels.innerHTML = renderers[i](t);
+
+// safe lucide
+if(window.lucide) lucide.createIcons();
 }
 
-// ===== TOGGLE =====
+// ===== RENDERERS =====
+function renderQuestions(t){
+return t.questions.map(q=>`
+<p class="mb-2">
+${q.en}<br>
+${showViet?`<span class="text-green-600 text-sm">${q.vi}</span>`:''}
+</p>
+`).join('');
+}
+
+function renderVocab(t){
+return t.vocab.map(v=>`
+<p>${v.en} - ${showViet?v.vi:''}</p>
+`).join('');
+}
+
+function renderGrammar(t){
+return t.grammar.map(g=>`
+<p>${g.en} - ${showViet?g.vi:''}</p>
+`).join('');
+}
+
+function renderPractice(t){
+return t.exercises.map((ex,i)=>`
+<div class="mb-3">
+<p>${ex.q}</p>
+${ex.options.map((o,oi)=>`
+<button onclick="checkAnswer(${i},${oi})"
+class="border px-2 py-1 mr-2 mt-1 rounded">
+${o}
+</button>
+`).join('')}
+</div>
+`).join('');
+}
+
+function renderSpeaking(){
+return `
+<textarea class="w-full border p-2" rows="3"></textarea>
+`;
+}
+
+// ===== LOGIC =====
+function checkAnswer(i,oi){
+const ex = TOPICS[currentTopic].exercises[i];
+alert(oi===ex.answer ? "Correct!" : "Wrong!");
+}
+
 function toggleViet(){
 showViet=!showViet;
 renderContent();
 }
 
-// ===== INIT =====
+// ===== INIT (FIXED) =====
 document.addEventListener("DOMContentLoaded",()=>{
 renderNav();
 renderContent();
